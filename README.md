@@ -1,7 +1,9 @@
 📦 Warehouse Management System
 👨‍💻 Team Members
-Shreyansh ,
-Ved
+👨‍💻 Team Contributions
+
+Shreyansh – UI development, database integration, functionality implementation                                                                                                                                         
+Ved – Testing, documentation, and minor feature support
 
 
 
@@ -33,7 +35,19 @@ Delete products
 Record sales
 Automatic stock deduction
 Input validation
-User-friendly interface
+User-friendly interface 
+
+
+▶ How to Run the Project
+
+1. Install Python 3.x
+2. Clone the repository:
+   git clone https://github.com/shreyansh8888/warehouse-management-system.git
+3. Navigate to the project folder
+4. Install required libraries:
+   pip install customtkinter matplotlib
+5. Run the application:
+   python main.py
 📚 Learning Outcomes
 Database integration with Python
 GUI development
