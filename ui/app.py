@@ -850,3 +850,9 @@ class WMSApp(ctk.CTk):
                 w.destroy()
         except Exception:
             pass
+
+# ───────────── Application Entry Point ─────────────
+if __name__ == "__main__":
+    print("Starting Warehouse Management System...")
+    app = WMSApp()
+    app.mainloop()
