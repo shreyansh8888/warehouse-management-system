@@ -2,6 +2,9 @@
 👨‍💻 Team Members
 Shreyansh
 Ved
+
+
+
 📌 Project Overview
 
 The Warehouse Management System (WMS) is a desktop-based application developed using Python. It helps manage inventory, stock updates, sales records, and warehouse data efficiently.
