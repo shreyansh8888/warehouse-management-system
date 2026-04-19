@@ -3,7 +3,7 @@
 👨‍💻 Team Contributions
 
 Shreyansh – UI development, database integration, functionality implementation                                                                                                                                         
-Ved – Testing, documentation, and minor feature support
+Ved – Testing, documentation, and feature support
 
 
 
