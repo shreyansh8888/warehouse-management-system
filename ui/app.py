@@ -13,7 +13,7 @@ try:
 except ImportError:
     HAS_MPL = False
 
-BG      = "#0f172a"
+BG      = "#0f172a
 CARD_BG = "#1e293b"
 SIDEBAR = "#111827"
 HEADER  = "#1e3a8a"
@@ -321,7 +321,7 @@ class WMSApp(ctk.CTk):
 
     def _draw_charts(self):
         chart_frame = tk.Frame(self.main, bg=BG)
-        chart_frame.pack(fill="both", expand=True, padx=24, pady=10)
+        chart_frame.pack(fill="both", expand=True, padx=24, pady=20)
 
         cat_data     = self.db.get_category_stock()
         monthly_data = self.db.get_monthly_sales()
@@ -338,7 +338,7 @@ class WMSApp(ctk.CTk):
             for spine in ax.spines.values():
                 spine.set_edgecolor("#334155")
             ax.title.set_color("white")
-            ax.title.set_fontsize(10)
+            ax.title.set_fontsize(20)
 
         if cat_data:
             cats, qtys = zip(*cat_data)
@@ -785,55 +785,6 @@ class WMSApp(ctk.CTk):
         _btn(bf, "  Toggle Role", toggle_role,  HEADER,   "#1e40af", 160
              ).pack(side="left")
 
-    # ════════════ ACTIVITY LOGS ════════════
-    def show_logs(self):
-        self.clear_main()
-
-        _lbl(self.main, "Activity Logs", 26, True, ORANGE
-             ).pack(anchor="w", padx=30, pady=(24, 4))
-        _lbl(self.main,
-             "Read-only  •  No one can edit  •  Only admin can delete",
-             12, color="#64748b").pack(anchor="w", padx=30, pady=(0, 12))
-
-        cols   = ("ID", "Timestamp", "User", "Action", "Detail")
-        widths = [50, 160, 120, 160, 310]
-        holder = tk.Frame(self.main, bg=BG)
-        holder.pack(fill="both", expand=True, padx=30)
-
-        tree = _tree(holder, cols, widths)
-        sb2  = ttk.Scrollbar(holder, orient="vertical", command=tree.yview)
-        tree.configure(yscrollcommand=sb2.set)
-        tree.pack(side="left", fill="both", expand=True)
-        sb2.pack(side="left", fill="y")
-
-        def refresh():
-            tree.delete(*tree.get_children())
-            for row in self.db.get_logs():
-                tree.insert("", tk.END, values=row)
-
-        refresh()
-
-        bf = tk.Frame(self.main, bg=BG)
-        bf.pack(anchor="w", padx=30, pady=10)
-
-        def del_entry():
-            sel = tree.selection()
-            if not sel:
-                messagebox.showwarning("Select", "Select a log entry."); return
-            lid = tree.item(sel[0])["values"][0]
-            if messagebox.askyesno("Confirm", "Delete this log entry?"):
-                self.db.delete_log(lid)
-                refresh()
-
-        def clear_all_logs():
-            if messagebox.askyesno("Confirm", "Clear ALL logs? Cannot be undone."):
-                self.db.clear_logs()
-                refresh()
-
-        _btn(bf, "  Delete Entry",  del_entry,      "#7f1d1d", "#991b1b", 150
-             ).pack(side="left", padx=(0, 12))
-        _btn(bf, "  Clear All Logs", clear_all_logs, "#4c0519", "#9f1239", 160
-             ).pack(side="left")
 
     # ════════════ HELPERS ════════════
     def clear_main(self):
