@@ -2,8 +2,8 @@
 👨‍💻 Team Members
 👨‍💻 Team Contributions
 
-Shreyansh – UI development, database integration, functionality implementation                                                                                                                                         
-Ved – Testing, documentation, and feature support
+Shreyansh – UI development, functionality implementation and feature support                                                                                                                                        
+Ved – Testing, documentation, and database integration , video
 
 
 
