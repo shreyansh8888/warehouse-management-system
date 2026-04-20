@@ -4,19 +4,23 @@ import customtkinter as ctk
 from database.database import WarehouseDB
 import datetime
 
+# Try importing matplotlib for charts
 try:
     import matplotlib
-    matplotlib.use("TkAgg")
+    matplotlib.use("TkAgg")  # Use Tkinter backend
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-    HAS_MPL = True
+    HAS_MPL = True   # If installed, charts will work
 except ImportError:
-    HAS_MPL = False
+    HAS_MPL = False  # If not installed, charts disabled
 
-BG      = "#0f172a
-CARD_BG = "#1e293b"
-SIDEBAR = "#111827"
-HEADER  = "#1e3a8a"
+
+# ================== COLORS ==================
+# These are UI theme colors used in the app
+BG      = "#0f172a"   # Main background
+CARD_BG = "#1e293b"   # Cards background
+SIDEBAR = "#111827"   # Sidebar color
+HEADER  = "#1e3a8a"   # Header color
 ORANGE  = "#f97316"
 GREEN   = "#14b8a6"
 RED     = "#ef4444"
@@ -25,69 +29,148 @@ BLUE    = "#3b82f6"
 PURPLE  = "#8b5cf6"
 
 
+# ================== TREEVIEW STYLE ==================
 def _style_tree():
+    """
+    This function sets custom styling for table (Treeview)
+    """
     s = ttk.Style()
     try:
-        s.theme_use("clam")
+        s.theme_use("clam")  # Better modern theme
     except Exception:
         pass
-    s.configure("W.Treeview", background=CARD_BG, fieldbackground=CARD_BG,
-                foreground="white", rowheight=30, font=("Arial", 11))
-    s.configure("W.Treeview.Heading", background=HEADER,
-                foreground="white", font=("Arial", 11, "bold"))
+
+    # Table row style
+    s.configure("W.Treeview",
+                background=CARD_BG,
+                fieldbackground=CARD_BG,
+                foreground="white",
+                rowheight=30,
+                font=("Arial", 11))
+
+    # Table header style
+    s.configure("W.Treeview.Heading",
+                background=HEADER,
+                foreground="white",
+                font=("Arial", 11, "bold"))
+
+    # When row is selected
     s.map("W.Treeview", background=[("selected", BLUE)])
 
 
 def _tree(parent, columns, widths):
+    """
+    Creates a table (Treeview) with given columns and widths
+    """
     _style_tree()
-    t = ttk.Treeview(parent, columns=columns, show="headings", style="W.Treeview")
+
+    t = ttk.Treeview(parent,
+                     columns=columns,
+                     show="headings",
+                     style="W.Treeview")
+
+    # Set column headings and width
     for col, w in zip(columns, widths):
         t.heading(col, text=col)
         t.column(col, width=w)
-    t.tag_configure("low",  background="#450a0a", foreground="#fca5a5")
-    t.tag_configure("zero", background="#7f1d1d", foreground="white")
+
+    # Special colors for stock levels
+    t.tag_configure("low",  background="#450a0a", foreground="#fca5a5")  # Low stock
+    t.tag_configure("zero", background="#7f1d1d", foreground="white")    # Out of stock
+
     return t
 
 
+# ================== LABEL HELPER ==================
 def _lbl(parent, text, size=13, bold=False, color="white", **kw):
+    """
+    Shortcut function to create labels easily
+    """
     font = ("Arial", size, "bold") if bold else ("Arial", size)
-    return ctk.CTkLabel(parent, text=text, font=font, text_color=color, **kw)
+
+    return ctk.CTkLabel(
+        parent,
+        text=text,
+        font=font,
+        text_color=color,
+        **kw
+    )
 
 
+# ================== BUTTON HELPER ==================
 def _btn(parent, text, cmd, color=BLUE, hover=None, width=140, **kw):
-    return ctk.CTkButton(parent, text=text, command=cmd,
-                         fg_color=color, hover_color=hover or color,
-                         width=width, **kw)
+    """
+    Shortcut function to create buttons easily
+    """
+    return ctk.CTkButton(
+        parent,
+        text=text,
+        command=cmd,
+        fg_color=color,
+        hover_color=hover or color,
+        width=width,
+        **kw
+    )
 
 
+# ================== MAIN APP CLASS ==================
 class WMSApp(ctk.CTk):
 
     def __init__(self):
+        """
+        This runs when app starts
+        """
         super().__init__()
+
+        # Window settings
         self.geometry("1200x750")
         self.title("Warehouse Management System")
         self.resizable(True, True)
+
+        # Theme settings
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
-        self.db           = WarehouseDB()
-        self.current_user = None
-        self.role         = None
-        self.main         = None
-        self._tick_id     = None
+        # Database object
+        self.db = WarehouseDB()
 
+        # User info
+        self.current_user = None
+        self.role = None
+
+        # Main UI container
+        self.main = None
+
+        # Clock timer id
+        self._tick_id = None
+
+        # Start with login screen
         self.show_login()
 
-    # ════════════ CLOCK ════════════
+
+    # ================== CLOCK FUNCTION ==================
     def _do_tick(self):
+        """
+        Updates time every 1 second
+        """
         try:
+            # Get current date & time
             now = datetime.datetime.now().strftime("%d-%m-%Y   %H:%M:%S")
+
+            # Update label
             self.time_lbl.configure(text=f"  {now}  ")
+
+            # Call again after 1 second
             self._tick_id = self.after(1000, self._do_tick)
+
         except Exception:
             self._tick_id = None
 
+
     def cancel_tick(self):
+        """
+        Stops the clock when switching screens
+        """
         if self._tick_id is not None:
             try:
                 self.after_cancel(self._tick_id)
@@ -95,109 +178,91 @@ class WMSApp(ctk.CTk):
                 pass
             self._tick_id = None
 
-    # ════════════ LOGIN ════════════
+
+    # ================== LOGIN SCREEN ==================
     def show_login(self):
+        """
+        Displays login UI
+        """
         self.cancel_tick()
         self.clear_all()
-        self.update_idletasks()
 
         bg = ctk.CTkFrame(self, fg_color=BG)
-        bg.place(relx=0, rely=0, relwidth=1, relheight=1)
+        bg.place(relwidth=1, relheight=1)
 
+        # Login card
         card = ctk.CTkFrame(bg, width=420, height=510,
                             fg_color=CARD_BG, corner_radius=16)
         card.place(relx=0.5, rely=0.5, anchor="center")
-        card.pack_propagate(False)
 
+        # Title
         _lbl(card, "Welcome to", 14, color="#94a3b8").pack(pady=(40, 0))
         _lbl(card, "Warehouse Management\nSystem", 22, True,
              color=ORANGE).pack(pady=(4, 4))
-        _lbl(card, "Sign in to your account", 12,
-             color="#64748b").pack(pady=(0, 24))
 
-        self.u_entry = ctk.CTkEntry(card, placeholder_text="Username",
-                                    width=300, height=40)
+        # Username input
+        self.u_entry = ctk.CTkEntry(card,
+                                   placeholder_text="Username",
+                                   width=300, height=40)
         self.u_entry.pack(pady=6)
-        self.p_entry = ctk.CTkEntry(card, placeholder_text="Password",
-                                    show="*", width=300, height=40)
+
+        # Password input
+        self.p_entry = ctk.CTkEntry(card,
+                                   placeholder_text="Password",
+                                   show="*",
+                                   width=300, height=40)
         self.p_entry.pack(pady=6)
+
+        # Press Enter → login
         self.p_entry.bind("<Return>", lambda _: self._do_login())
 
+        # Error label
         self.login_err = _lbl(card, "", 11, color=RED)
         self.login_err.pack(pady=(4, 0))
 
-        _btn(card, "Sign In", self._do_login, ORANGE, "#ea580c",
-             width=300, height=42, font=("Arial", 14, "bold")).pack(pady=14)
+        # Login button
+        _btn(card, "Sign In",
+             self._do_login,
+             ORANGE, "#ea580c",
+             width=300, height=42).pack(pady=14)
 
-        _lbl(card, "Don't have an account?", 12, color="#64748b").pack()
-        ctk.CTkButton(card, text="Sign Up", width=300, height=38,
-                      fg_color="transparent", border_width=1,
-                      border_color=ORANGE, text_color=ORANGE,
-                      hover_color="#1e1e2e",
-                      command=self.show_signup).pack(pady=8)
 
+    # ================== LOGIN LOGIC ==================
     def _do_login(self):
+        """
+        Checks username & password
+        """
         u = self.u_entry.get().strip()
         p = self.p_entry.get().strip()
+
+        # Empty check
         if not u or not p:
             self.login_err.configure(text="Enter username and password.")
             return
+
+        # Check from database
         res = self.db.check_user(u, p)
+
         if res:
             self.current_user = u
-            self.role = res[0]          # res = (role,)
+            self.role = res[0]
+
+            # Log activity
             self.db.log(u, "LOGIN", f"Role: {self.role}")
+
+            # Load main dashboard
             self.load_main_ui()
         else:
             self.login_err.configure(text="Invalid username or password.")
 
-    # ════════════ SIGNUP ════════════
-    def show_signup(self):
-        self.cancel_tick()
-        self.clear_all()
-        self.update_idletasks()
 
-        bg = ctk.CTkFrame(self, fg_color=BG)
-        bg.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-        card = ctk.CTkFrame(bg, width=420, height=460,
-                            fg_color=CARD_BG, corner_radius=16)
-        card.place(relx=0.5, rely=0.5, anchor="center")
-        card.pack_propagate(False)
-
-        _lbl(card, "Create Account", 22, True, color=ORANGE).pack(pady=(40, 4))
-        _lbl(card, "Registered as Employee", 12,
-             color="#64748b").pack(pady=(0, 24))
-
-        self.su_user = ctk.CTkEntry(card, placeholder_text="Username",
-                                    width=300, height=40)
-        self.su_user.pack(pady=6)
-        self.su_pass = ctk.CTkEntry(card, placeholder_text="Password",
-                                    show="*", width=300, height=40)
-        self.su_pass.pack(pady=6)
-
-        self.su_err = _lbl(card, "", 11, color=RED)
-        self.su_err.pack(pady=(4, 0))
-
-        def register():
-            u = self.su_user.get().strip()
-            p = self.su_pass.get().strip()
-            if not u or not p:
-                self.su_err.configure(text="Both fields required."); return
-            if self.db.add_user(u, p):
-                self.db.log(u, "SIGNUP", "New employee account created")
-                messagebox.showinfo("Success", f"Account '{u}' created!")
-                self.show_login()
-            else:
-                self.su_err.configure(text="Username already exists.")
-
-        _btn(card, "Register", register, ORANGE, "#ea580c",
-             width=300, height=42, font=("Arial", 14, "bold")).pack(pady=14)
-        ctk.CTkButton(card, text="Back to Sign In", width=300, height=38,
-                      fg_color="transparent", border_width=1,
-                      border_color="#475569", text_color="#94a3b8",
-                      hover_color="#1e1e2e",
-                      command=self.show_login).pack()
+    # ================== CLEAR FUNCTIONS ==================
+    def clear_all(self):
+        """
+        Removes all widgets from window
+        """
+        for w in self.winfo_children():
+            w.destroy()
 
     # ════════════ MAIN SHELL ════════════
     def load_main_ui(self):
